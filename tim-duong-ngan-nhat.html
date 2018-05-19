@@ -184,72 +184,77 @@ function AKT(dataTable){
     window.end = $("#end").val();
 
     // filter list start
-    var result = _.filter(dataTable, function (value) {
-        return value.from == start;
-    });
+    // var result = _.filter(dataTable, function (value) {
+    //     return value.from == start;
+    // });
 
+    var result = Fn(dataTable , start , end  , {sum:0 , way:[]});
     console.log(result);
-
-    console.log(Fn(dataTable , result  ) );
 }
 window.testArr = [];
-function Fn(dataTable , result ){
-    var returnValue = {};
-    var arrayResult = [];
-
-    var findAResult = false;
-    // each child
-    _.each(result , function(child){
-        // flag
-        if(findAResult){
-            return false;
-        }
-        // check diem con này có phải điểm cuối hay dích k
-        var checkChildEnd = _.filter(dataTable, function (value) {
-            return value.from == child.to;
-        });
-        console.log(child.to);
-
-        /*
-            nếu đích là giá trị cần tìm
-            trả về f(S) của nó
-         */
-        if(child.to  == window.end){
-            arrayResult.push({
-                sum: +child.distance,
-                way: [child.from, child.to]
-            })
-            findAResult = true;
-        }
-        /* 
-            nếu không phải là đích trả về giá trị lỗi
-        */
-        else if (checkChildEnd.length == 0) {
-            arrayResult.push({sum: 0, way: []})
-        }else{
-            /*
-                nếu còn child thì tìm xuống típ
-            */
-            var children = _.filter(dataTable, function (value) {
-                return value.from == child.to;
-            });
-            var newItem = Fn(dataTable, children);
-
-            // nếu cấp con trả về giá trị
-            if (newItem) {
-                arrayResult.push({
-                    sum: newItem.sum + (+child.distance),
-                    way: [child.from].concat(newItem.way)
-                })
-            } else {
-                arrayResult.push({sum: 0,way: []});
-            }
-        }      
-
+function Fn(dataTable , from , end , $parentResult){
+    var $arrResult = [];
+    // LAY RA NHUNG GIA TRI TRONG TAP OPEN DE XET
+    var $open = _.filter(dataTable, function (value) {
+        return value.from == from;
     });
 
-    returnValue = _.sortBy(arrayResult, "sum")[0];
-    return returnValue;
+    // KIEM TRA TRONG TAP OPEN CO GIA TRI DICH KO
+    var $end = findEnd($open , end);
+    if($end){
+        return {
+            sum: +$parentResult.sum + +($end.sum) ,
+            way: $parentResult.way.concat($end.way)
+        };
+    };
+
+    // KIEM TRA DIEM DO PHAI DIEM CUOI HAY KHONG - NEU PHAI TUC LA KO PHAI DIEM DICH RETURN NULL
+    if($open.length == 0){
+        return {
+            sum:0,
+            way:[]
+        }
+    }
+
+    // NEU CO TAP CON TIEP TUC TIM XUONG
+    _.each($open , function(value){
+        $arrResult.push(Fn(dataTable , value.to , end , {
+            sum: value.distance,
+            way: [value.from]
+        }) );
+    });
+
+    // LOAI CAC DICH KHONG PHAI DICH CAN TIM
+    $arrResult = _.filter($arrResult , function(value){
+        return value.sum > 0;
+    });
+
+    // TIM DUONG DI NGAN NHAT
+    $arrResult = _.sortBy($arrResult, "sum")[0];
+
+    return ($arrResult) ? $arrResult : {sum:0 ,way:[]};
+}
+
+
+function findEnd($open , end){
+    var $arrResult;
+
+    var $end = _.filter($open, function (value) {
+        return value.to == end;
+    });
+
+    // NẾU CÓ TRẢ VỀ GIÁ TRỊ ĐÍCH
+    if ($end.length > 0) {
+        $arrResult= {
+            sum: $end[0].distance,
+            way: [$end[0].from, $end[0].to]
+        };
+    }
+    return  $arrResult;
+}
+
+function findLastNode(dataTable , from){
+
 }
 </script>
 </body>
