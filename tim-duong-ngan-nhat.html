@@ -77,6 +77,8 @@
     </div>
     <input class="btn btn-primary pull-right" style="margin-bottom:20px" type="button" value="Find" id="find">
     
+    <div id="result-timduong">
+    </div>
     
 </div>
 
@@ -183,12 +185,17 @@ function AKT(dataTable){
     var end = $("#end").val();
     window.end = $("#end").val();
 
-    // filter list start
-    // var result = _.filter(dataTable, function (value) {
-    //     return value.from == start;
-    // });
-
     var result = Fn(dataTable , start , end  , {sum:0 , way:[]});
+
+    $("#result-timduong").html(`
+        <label>
+            Tổng Độ dài quảng đường : 
+            ${result.sum}
+        </label>
+        <label>
+            Những đường sẽ đi qua : 
+            ${result.way.join(",")}
+        </label>`)
     console.log(result);
 }
 window.testArr = [];

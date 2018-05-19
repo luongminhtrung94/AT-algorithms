@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body,html{
+            padding: 0;
+            margin:0;
+        }
+        *{
+            box-sizing:border-box;
+        }
+        .position{
+            position: absolute;
+            transform:translateX(-50%);
+            z-index: 3;
+        }
+    </style>
+</head>
+<body>
+        <!-- input -->
+        <input id="title" type="text" placeholder="title" />
+        <input id="position-x" type="text" disabled>
+        <input id="position-y" type="text" disabled>
+
+        <!-- canvas -->
+        <div class="real-world-map" style="position:relative;display:inline-block">
+            <img src="./download.jpg" style="position: absolute;top:0;left:0;width:100%;height:100%;z-index: 1;" />
+            <canvas id="map" style="position:relative;z-index: 2" ;></canvas>
+        </div>
+
+        <!-- position -->
+        <div class="position" data-id="1"></div>
+
+<script src="./jquery-3.3.1.min.js"></script>
+<script>
+    window.onload = function () {
+        var canvas = document.getElementById("map"),
+        ctx = canvas.getContext("2d");
+
+        // init canvas
+        canvas.width = 1000;
+        canvas.height = 500;
+
+        //----get position on mouse
+        canvas.addEventListener("click" , function(e){
+            var mousePos = getMousePos(canvas , e);
+            
+            ctx.clearRect(0 , 0 , canvas.width , canvas.height);
+            // marker
+            loadMarker(ctx , canvas , mousePos.x , mousePos.y );
+
+            // save position to input
+            document.getElementById("position-x").value =  mousePos.x;
+            document.getElementById("position-y").value =  mousePos.y;
+           
+            //test data
+            $(".position[data-id='1']").css({
+                "top" : mousePos.y,
+                "left" :  mousePos.x,
+            }).text($("#title").val())
+        });
+    };
+
+    function loadMarker(ctx ,canvas , x , y){
+        var marker = new Image();
+        marker.src = "./map-marker-icon.png";
+        marker.onload = function () {
+            ctx.drawImage(marker, x - 20, y - 40, 40, 40);
+        };
+    }
+
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+</script>
+</body>
+</html>

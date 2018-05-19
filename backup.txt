@@ -1,0 +1,56 @@
+var returnValue = {};
+    var arrayResult = [];
+
+    var findAResult = false;
+    // each child
+    _.each(result , function(child){
+        // flag
+        if(findAResult){
+            return false;
+        }
+        // check diem con này có phải điểm cuối hay dích k
+        var checkChildEnd = _.filter(dataTable, function (value) {
+            return value.from == child.to;
+        });
+        console.log(child.to);
+
+        /*
+            nếu đích là giá trị cần tìm
+            trả về f(S) của nó
+         */
+        if(child.to  == window.end){
+            arrayResult.push({
+                sum: +child.distance,
+                way: [child.from, child.to]
+            })
+            findAResult = true;
+        }
+        /* 
+            nếu không phải là đích trả về giá trị lỗi
+        */
+        else if (checkChildEnd.length == 0) {
+            arrayResult.push({sum: 0, way: []})
+        }else{
+            /*
+                nếu còn child thì tìm xuống típ
+            */
+            var children = _.filter(dataTable, function (value) {
+                return value.from == child.to;
+            });
+            var newItem = Fn(dataTable, children);
+
+            // nếu cấp con trả về giá trị
+            if (newItem) {
+                arrayResult.push({
+                    sum: newItem.sum + (+child.distance),
+                    way: [child.from].concat(newItem.way)
+                })
+            } else {
+                arrayResult.push({sum: 0,way: []});
+            }
+        }      
+
+    });
+
+    returnValue = _.sortBy(arrayResult, "sum")[0];
+    return returnValue;
