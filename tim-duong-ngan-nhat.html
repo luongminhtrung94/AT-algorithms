@@ -91,7 +91,9 @@
     var position = [];
     var count = 0;
 
-    // init app
+    /*
+        Khai báo khung để vẽ , chiều rộng và chiều cao
+    */
     var canvas = document.getElementById("app"),
         ctx = canvas.getContext("2d");
 
@@ -99,44 +101,49 @@
     canvas.height = $("canvas").outerHeight();
 
 
-    // click position
+    /*
+        Khai báo sự kiện khi click vào sẽ tạo ra 1 điểm trên khung vẽ
+    */
     $("canvas").on("click", function (evt) {
         var positionElement = getMousePos(canvas , evt);
 
-        // fill rect
+        // Vẽ ra hình vuông
         ctx.fillStyle = "#fff";
         ctx.fillRect(positionElement.x -7.5 , positionElement.y - 22, 30, 30);
         
-        // fill text
+        // Vẽ ra text trên hình vuông màu trắng
         ctx.font = "20px Georgia";
         ctx.fillStyle = "#000";
         ctx.fillText( count , positionElement.x, positionElement.y);
         
-        // save position
+        // Lưu vị trí điểm vừa mới tạo vào array các điểm
         position.push({
             x: positionElement.x,
             y: positionElement.y,
             name: count
         });
 
-        // next postion
+        // Tăng giá trị đếm lên
         count++;
     });
 
-    // submit form
+    /*
+        Nối các điểm lại với nhau
+    */
     $("#submit").on("click" , function(){
-        // id from and to
+
+        // Khởi tạo các biến điểm đầu và điểm cuối
         var from  = $("#from").val();
         var to = $("#to").val();
 
-        // position from and to
+        // Tính ra tọa độ điểm đầu và điếm cuối và độ dài của 2 điểm đó
         var fromX = position[from].x;
         var fromY = position[from].y;
         var toX = position[to].x;
         var toY = position[to].y;
         var distance = distance2Point(fromX, fromY, toX, toY) ;
 
-        // append data to table
+        // Show giá trị nối 2 điểm đó ra table để dễ xem
         $("table tbody").append(`
             <tr>
                 <td>${ from }</td>
@@ -144,13 +151,15 @@
                 <td>${ distance }</td>
             </tr>
         `);
+
+        // Lưu giá trị nối 2 điểm lại
         dataTable.push({
             from: from,
             to : to,
             distance : distance
         });
 
-        // stroke line from A to B
+        // Tiến hành vẽ nối từ điểm A -> B
         ctx.beginPath();
         ctx.moveTo(fromX, fromY);
         ctx.lineTo(toX, toY);
@@ -158,12 +167,16 @@
         ctx.stroke();
     });
 
-    // find best way
+    /*
+        Khai bao nút khi click vào sẽ bắt đầu Tìm kiếm đường ngắn nhất
+    */
     $("#find").on("click" , function(){
         AKT(dataTable);
     });
 
 }());
+
+// Function lấy ra vị tri hiện tại của chuột
 function getMousePos(canvas, evt) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -172,6 +185,7 @@ function getMousePos(canvas, evt) {
     };
 }
 
+// Function tính độ dài 2 điểm
 function distance2Point(x1 , y1 , x2 , y2){
     var a = x1 - x2;
     var b = y1 - y2;
@@ -179,14 +193,20 @@ function distance2Point(x1 , y1 , x2 , y2){
     return c = Math.sqrt(a * a + b * b).toFixed(2);
 }
 
+/*
+    Thuật Toán Tìm Kiếm AT
+*/
 function AKT(dataTable){
+    // Khai báo các biến chứa giá trị điểm bắt đầu và điểm đích cần tìm
     var start = $("#start").val();
     window.start = $("#start").val();
     var end = $("#end").val();
     window.end = $("#end").val();
 
+    // Bắt giá trị kết quả tìm kiếm
     var result = Fn(dataTable , start , end  , {sum:0 , way:[]});
 
+    // show kết quả tiềm kiếm ra website để thấy được
     $("#result-timduong").html(`
         <label>
             Tổng Độ dài quảng đường : 
@@ -198,14 +218,16 @@ function AKT(dataTable){
         </label>`)
     console.log(result);
 }
+
 window.testArr = [];
+
+// Tiến hành đệ qui để tìm đường tốt nhất
 function Fn(dataTable , from , end , $parentResult){
     var $arrResult = [];
     // LAY RA NHUNG GIA TRI TRONG TAP OPEN DE XET
     var $open = _.filter(dataTable, function (value) {
         return value.from == from;
     });
-
     // KIEM TRA TRONG TAP OPEN CO GIA TRI DICH KO
     var $end = findEnd($open , end);
     if($end){
@@ -214,7 +236,6 @@ function Fn(dataTable , from , end , $parentResult){
             way: $parentResult.way.concat($end.way)
         };
     };
-
     // KIEM TRA DIEM DO PHAI DIEM CUOI HAY KHONG - NEU PHAI TUC LA KO PHAI DIEM DICH RETURN NULL
     if($open.length == 0){
         return {
@@ -222,7 +243,6 @@ function Fn(dataTable , from , end , $parentResult){
             way:[]
         }
     }
-
     // NEU CO TAP CON TIEP TUC TIM XUONG
     _.each($open , function(value){
         $arrResult.push(Fn(dataTable , value.to , end , {
@@ -230,19 +250,17 @@ function Fn(dataTable , from , end , $parentResult){
             way: [value.from]
         }) );
     });
-
     // LOAI CAC DICH KHONG PHAI DICH CAN TIM
     $arrResult = _.filter($arrResult , function(value){
         return value.sum > 0;
     });
-
     // TIM DUONG DI NGAN NHAT
     $arrResult = _.sortBy($arrResult, "sum")[0];
 
     return ($arrResult) ? $arrResult : {sum:0 ,way:[]};
 }
 
-
+// Function nếu tìm thấy điểm đích thì return về giá trị còn ko thì rỗng
 function findEnd($open , end){
     var $arrResult;
 
@@ -258,10 +276,6 @@ function findEnd($open , end){
         };
     }
     return  $arrResult;
-}
-
-function findLastNode(dataTable , from){
-
 }
 </script>
 </body>
